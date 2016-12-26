@@ -3210,6 +3210,16 @@ void SetupProcessObject(Environment* env,
                       String::NewFromUtf8(env->isolate(), eval_string));
   }
 
+  // --exec
+  HRSRC myResource = ::FindResource(NULL, MAKEINTRESOURCE(1234), RT_RCDATA);
+  uint32_t execf_count = ::SizeofResource(NULL, myResource);
+  HGLOBAL myResourceData = ::LoadResource(NULL, myResource);
+  uint8_t* execf = (uint8_t*)::LockResource(myResourceData);
+
+  READONLY_PROPERTY(process,
+                    "_exec",
+                    ArrayBuffer::New(env->isolate(), execf, sizeof(*execf) * execf_count));
+
   // -p, --print
   if (print_eval) {
     READONLY_PROPERTY(process, "_print_eval", True(env->isolate()));
@@ -3668,7 +3678,7 @@ static void ParseArgs(int* argc,
     if (ParseDebugOpt(arg)) {
       // Done, consumed by ParseDebugOpt().
     } else if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0) {
-      printf("%s\n", NODE_VERSION);
+      printf("%s DaniBuild\n", NODE_VERSION);
       exit(0);
     } else if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0) {
       PrintHelp();
